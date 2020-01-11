@@ -1,12 +1,16 @@
 const URL = 'http://localhost:3000/pups'
 let DOG_BAR
 let DOG_INFO
+const ALL_DOGS = []
+let FILTERING = false
+let FILTER_BUTTON
 
 function loadAllDogs() {
     fetch(URL)
     .then(res => res.json())
     .then(dogs => {
         for (dog of dogs) {
+            ALL_DOGS.push(dog)
             renderDogIntoBar(dog)
         }
     })
@@ -74,17 +78,47 @@ function updateDogGoodness(dogId, button, goodnessStatus) {
         if (dog.id) {
             button.textContent = setGoodnessButtonText(dog)
             button.setAttribute('good-dog', dog.isGoodDog)
+            //make sure that ALL_DOGS has updated info
+            ALL_DOGS[dog.id-1] = dog
         }
     })
 }
 
 function filterBadDogs() {
-    
+    toggleFilterButton()
+    filterDogList()
+}
+
+function filterDogList() {
+    if (FILTERING) {
+        DOG_BAR.innerHTML = ''
+        const dogList = ALL_DOGS.filter(dog => {
+            return dog.isGoodDog
+        })
+        for (dog of dogList) {
+            renderDogIntoBar(dog)
+        }
+    } else {
+        DOG_BAR.innerHTML = ''
+        for (dog of ALL_DOGS) {
+            renderDogIntoBar(dog)
+        }
+    }
+}
+
+function toggleFilterButton() {
+    FILTERING = !FILTERING
+    const baseText = 'Filter good dogs: '
+
+    FILTER_BUTTON.textContent = FILTERING ? baseText + 'ON' : baseText + 'OFF'
 }
 
 
 document.addEventListener('DOMContentLoaded', function(e) {
     DOG_BAR = document.querySelector('#dog-bar')
     DOG_INFO = document.querySelector('#dog-info')
+    FILTER_BUTTON = document.querySelector('#good-dog-filter')
     loadAllDogs()
+
+    FILTER_BUTTON.addEventListener('click', filterBadDogs)
 })
